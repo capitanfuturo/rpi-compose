@@ -2,10 +2,14 @@ version: '3'
 
 services:
     portainer:
-        image: portainer/portainer-ce:arm
+        image: portainer/portainer
         container_name: portaniner-rpi
         ports:
             - 9000:9000
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - portainer_data:/data
+
     mongo:
         image: johnrazeur/arm-mongo:latest
         container_name: mongo-rpi
@@ -14,22 +18,47 @@ services:
             - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
             - MONGO_INITDB_DATABASE=development
         ports:
-            - 27017-27019:27017-27019
+            - 27017:27017
         volumes:
             - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
     mongo-express:
         image: ind3x/rpi-mongo-express
         container_name: mongo-express-rpi
-        depends_on:
-            - mongo
+        links:
+            - mongo:mongo
         environment:
-            - ME_CONFIG_MONGODB_SERVER=mongo-rpi
-            - ME_CONFIG_MONGODB_PORT=27017
-            - ME_CONFIG_MONGODB_ENABLE_ADMIN=false
-            - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
-            - ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_ROOT_USER}
-            - ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_ROOT_PASSWORD}
-            - ME_CONFIG_BASICAUTH_USERNAME=${ME_LOGINUSER}
+            - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_ROOT_USER}
+            - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_ROOT_PASSWORD}
+            - ME_CONFIG_BASICAUTH_USERNAME=${ME_USER}
             - ME_CONFIG_BASICAUTH_PASSWORD=${ME_PASSWORD}
         ports:
             - 8081:8081
+
+    postgresql:
+        image: postgres:9
+        container_name: pg-rpi
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: ${PG_USER}
+            POSTGRES_PASSWORD: ${PG_PASSWORD}
+            PGDATA: /var/lib/postgresql/data
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+
+    pgadmin:
+        image: biarms/pgadmin4
+        container_name: pg-admin-rpi
+        ports:
+            - 5050:5050
+        volumes:
+            - pgadmin-data:/var/lib/pgadmin
+        links:
+            - "postgresql:pgsql-server"
+
+volumes:
+    portainer_data:
+    db-data:
+    pgadmin-data:

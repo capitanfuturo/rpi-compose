@@ -1,12 +1,15 @@
 # rpi-compose
 
-rpi-compose is a `docker-compose` file that helps `Raspberry pi users` to have a set of `docker services configured`.
+rpi-compose is a `docker-compose.yaml` file that helps `developers` to have a set of `docker services configured`. The idea is to have a mini local server with the most 
+usefull service for software developers.
 
 ## Services configured
 
 1. Portainer.io, port 9000
 2. Mongo DB 3.x, port 27017
 3. Mongo Express, port 8081
+4. PostgreSQL, port 5432
+5. PG Admin, port 5050
 
 ## Prerequisites
 
