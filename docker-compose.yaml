@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+    portainer:
+        image: portainer/portainer-ce:arm
+        container_name: portaniner-rpi
+        ports:
+            - 9000:9000
+    mongo:
+        image: johnrazeur/arm-mongo:latest
+        container_name: mongo-rpi
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+            - MONGO_INITDB_DATABASE=development
+        ports:
+            - 27017-27019:27017-27019
+        volumes:
+            - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    mongo-express:
+        image: ind3x/rpi-mongo-express
+        container_name: mongo-express-rpi
+        depends_on:
+            - mongo
+        environment:
+            - ME_CONFIG_MONGODB_SERVER=mongo-rpi
+            - ME_CONFIG_MONGODB_PORT=27017
+            - ME_CONFIG_MONGODB_ENABLE_ADMIN=false
+            - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
+            - ME_CONFIG_MONGODB_AUTH_USERNAME=${MONGO_ROOT_USER}
+            - ME_CONFIG_MONGODB_AUTH_PASSWORD=${MONGO_ROOT_PASSWORD}
+            - ME_CONFIG_BASICAUTH_USERNAME=${ME_LOGINUSER}
+            - ME_CONFIG_BASICAUTH_PASSWORD=${ME_PASSWORD}
+        ports:
+            - 8081:8081
